@@ -1,0 +1,14 @@
+@page "/inventory/write-offs"
+@model WriteOffsModel
+@{
+    Layout = "_Print";
+    ViewData["Title"] = "Written-off products";
+}
+<h1>Write-offs list as of @Time.Today.ToString("dd/MM/yyyy")</h1>
+<table>
+    <thead><tr><th style="width:100px">Code</th><th style="width:400px">Product</th><th style="width:100px">Quantity</th></tr></thead>
+    <tbody>
+        @foreach (var c in Model.WriteOffs) { <tr><td>@c.Code</td><td>@c.Name</td><td class="num">@c.Quantity.ToString("0.00")</td></tr> }
+    </tbody>
+</table>
+<p class="signature">Storekeeper<br>@Model.Storekeeper</p>

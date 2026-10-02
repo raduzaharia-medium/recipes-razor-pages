@@ -1,0 +1,122 @@
+@page "/goods-receipts/edit/{id:int?}"
+@model EditModel
+@{
+    ViewData["Title"] = Model.Id is null ? "New goods receipt" : "Goods receipt";
+    ViewData["Menu"] = "goods-receipts";
+    string Rotund(decimal value) => value.ToString("0.00");
+}
+<form method="post" action="@Model.FormAction">
+    @Html.AntiForgeryToken()
+    <button type="submit" asp-page-handler="Add" class="hidden-default" tabindex="-1">Add</button>
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="check"><button type="submit" class="primary">Save</button></p>
+                <p class="toolbox" data-icon="close"><a href="/goods-receipts?date=@Model.Input.Date.ToString("yyyy-MM-dd")">Cancel</a></p>
+                <p class="toolbox" data-icon="refresh"><button type="submit" asp-page-handler="Recalculate">Recalculate totals</button></p>
+                <p class="toolbox" data-icon="plus"><a href="/inventory/new-product" target="_blank">New product</a></p>   @* new tab: the receipt being typed is not lost *@
+                @if (Model.Id is not null) { <p class="toolbox" data-icon="print"><a href="/goods-receipts/@Model.Id/print" target="_blank">Print goods receipt</a></p> }
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+
+        <section class="content">
+            <div asp-validation-summary="All" class="errors"></div>
+            <fieldset>
+                <legend>Goods receipt details</legend>
+                <p class="field">
+                    <label asp-for="Input.Number">Number and date</label>
+                    <input asp-for="Input.Number" class="half num">
+                    <input asp-for="Input.Date" type="date" class="half">
+                </p>
+                <p class="field">
+                    <label asp-for="Input.DeliveryDocumentType">Delivery document type and no.</label>
+                    <select asp-for="Input.DeliveryDocumentType" asp-items="Model.DocumentTypes" class="half"></select>
+                    <input asp-for="Input.DeliveryDocumentNumber" class="half">
+                </p>
+            </fieldset>
+
+            <fieldset>
+                <legend>Supplier details</legend>
+                <p class="field">
+                    <label asp-for="Input.SupplierName">Supplier</label>
+                    <input asp-for="Input.SupplierName" data-autocomplete="/lookup?handler=Suppliers"
+                           data-fill='{"Input.SupplierAddress":"address","Input.SupplierCounty":"county","Input.SupplierTaxId":"taxId","Input.SupplierTradeRegisterNo":"tradeRegisterNo","Input.SupplierAccount":"account","Input.SupplierBank":"bank"}'>
+                </p>
+                <p class="field"><label asp-for="Input.SupplierAddress">Address and county</label><input asp-for="Input.SupplierAddress" class="two-thirds"><input asp-for="Input.SupplierCounty" class="third"></p>
+                <p class="field"><label asp-for="Input.SupplierTaxId">Tax ID and trade register no.</label><input asp-for="Input.SupplierTaxId" class="half"><input asp-for="Input.SupplierTradeRegisterNo" class="half"></p>
+                <p class="field"><label asp-for="Input.SupplierAccount">Account and bank</label><input asp-for="Input.SupplierAccount" class="half"><input asp-for="Input.SupplierBank" class="half"></p>
+            </fieldset>
+
+            <fieldset>
+                <legend>Products purchased (purchase price excl. VAT, selling price incl. VAT)</legend>
+
+                @if (Model.ShowNewProduct)
+                {
+                    <div class="panel">
+                        <p>The product is not in the inventory. Fill in its details to add it:</p>
+                        <p class="field"><label asp-for="NewProduct.Code">Code and name</label><input asp-for="NewProduct.Code" class="third" placeholder="@Model.LastProductCode"><input asp-for="NewProduct.Name" class="two-thirds"></p>
+                        <p class="field"><label asp-for="NewProduct.UnitOfMeasure">Unit and category</label><input asp-for="NewProduct.UnitOfMeasure" class="third"><input asp-for="NewProduct.Category" class="two-thirds" data-autocomplete="/lookup?handler=Categories" data-min-length="1"></p>
+                        <p><button type="submit" asp-page-handler="CreateProduct">Add to inventory</button></p>
+                    </div>
+                }
+
+                <table class="grid wide">
+                    <thead>
+                        <tr><th style="width:32px"></th><th style="width:80px">Code</th><th style="min-width:220px">Product</th><th style="width:75px">Pack size</th><th style="width:70px">Qty</th><th style="width:50px">Unit</th><th style="width:60px">VAT %</th><th style="width:90px">Purchase</th><th style="width:130px">Total</th><th style="width:85px">Sale</th><th style="width:45px"></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="insertion" data-enter="#add">
+                            <td></td><td></td>
+                            <td>
+                                <input asp-for="NewRow.Search" placeholder="product code or name" data-autocomplete="/lookup?handler=Products" data-id-target="NewRow.ProductId">
+                                <input asp-for="NewRow.ProductId" type="hidden">
+                            </td>
+                            <td><input asp-for="NewRow.PackSize" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td><input asp-for="NewRow.Quantity" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td></td>
+                            <td><input asp-for="NewRow.VatPercent" class="num" inputmode="decimal" asp-format="{0:0.##}" list="vat-used"></td>
+                            <td><input asp-for="NewRow.PurchasePrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td></td>
+                            <td><input asp-for="NewRow.SellingPrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td><button type="submit" id="add" asp-page-handler="Add" title="Add">+</button></td>
+                        </tr>
+                        @for (int i = 0; i < Model.Lines.Count; i++)
+                        {
+                            var d = Model.Details[Model.Lines[i].ProductId];
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Remove" asp-route-index="@i" title="Delete">✕</button></td>
+                                <td>@d.Code</td>
+                                <td>@d.Name<input asp-for="Lines[i].ProductId" type="hidden"></td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].PackSize" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].Quantity" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td>@d.UnitOfMeasure</td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].VatPercent" class="num" inputmode="decimal" asp-format="{0:0.##}" list="vat-used"></td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].PurchasePrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td class="num amount"><strong>@Rotund(Model.Value(i) + Model.VatValue(i))</strong><small>@Rotund(Model.Value(i)) + @Rotund(Model.VatValue(i)) VAT</small></td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].SellingPrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="totals">
+                            <td></td><td></td><td colspan="6" class="num">Total excl. VAT:</td>
+                            <td class="insertion-cell"><input asp-for="Input.TotalValue" class="num" inputmode="decimal" asp-format="{0:0.00}"></td><td></td><td></td>
+                        </tr>
+                        <tr class="totals">
+                            <td></td><td></td><td colspan="6" class="num">VAT:</td>
+                            <td class="insertion-cell"><input asp-for="Input.TotalVat" class="num" inputmode="decimal" asp-format="{0:0.00}"></td><td></td><td></td>
+                        </tr>
+                        <tr class="totals">
+                            <td></td><td></td><td colspan="6" class="num">Total incl. VAT:</td>
+                            <td class="insertion-cell"><input asp-for="Input.TotalWithVat" class="num" inputmode="decimal" asp-format="{0:0.00}"></td><td></td><td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <datalist id="vat-used">@foreach (var t in Model.VatRatesUsed) { <option value="@t.ToString("0.##")"></option> }</datalist>
+            </fieldset>
+        </section>
+    </div>
+</form>

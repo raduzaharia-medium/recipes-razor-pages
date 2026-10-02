@@ -1,0 +1,7 @@
+@page "/Error"
+@{
+    ViewData["Title"] = "Error";
+    var code = Request.Query["code"].ToString();
+}
+<h2>@(code == "404" ? "Page not found." : "An error occurred while processing the request.")</h2>
+<p><a href="/sales">Back to sales</a></p>

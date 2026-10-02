@@ -1,0 +1,43 @@
+@page "/sales/beverage-report"
+@model BeverageReportModel
+@{
+    if (Model.Print) Layout = "_Print";
+    ViewData["Title"] = "Beverage report";
+    ViewData["Menu"] = "sales";
+}
+@if (Model.Print)
+{
+    <h1>Production report no. ........... dated @Model.Day.ToString("dd/MM/yyyy")</h1>
+    <h2>Raw materials consumed</h2>
+    <partial name="_StockTable" model="Model.RawMaterials" />
+    <h2>The following were produced:</h2>
+    <partial name="_StockTable" model="Model.Produced" />
+    <p class="signature">Storekeeper<br>@Model.Storekeeper</p>
+}
+else
+{
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="print"><a href="/sales/beverage-report?date=@Model.Day.ToString("yyyy-MM-dd")&print=true" target="_blank">Print</a></p>
+                <p class="toolbox" data-icon="back"><a href="/sales?date=@Model.Day.ToString("yyyy-MM-dd")">Back to sales</a></p>
+            </fieldset>
+            <partial name="_Reports" />
+            <fieldset>
+                <legend>Report settings</legend>
+                <form method="get">
+                    <p class="field"><label for="date">Date</label><input type="date" id="date" name="date" value="@Model.Day.ToString("yyyy-MM-dd")"></p>
+                    <p><button type="submit">Generate report</button></p>
+                </form>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <fieldset>
+                <legend>Report de management beverages - @Model.Day.ToString("dd/MM/yyyy")</legend>
+                <partial name="_StockBalanceTable" model="Model.Items" />
+            </fieldset>
+        </section>
+    </div>
+}

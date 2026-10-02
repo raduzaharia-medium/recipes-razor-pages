@@ -1,0 +1,13 @@
+@page "/inventory/print"
+@model PrintModel
+@{
+    Layout = "_Print";
+    ViewData["Title"] = "Inventory";
+}
+<h1>Product inventory as of @Time.Today.ToString("dd/MM/yyyy")</h1>
+<table>
+    <thead><tr><th style="width:100px">Code</th><th style="width:400px">Product</th><th style="width:100px">Quantity</th></tr></thead>
+    <tbody>
+        @foreach (var s in Model.Stock) { <tr><td>@s.Code</td><td>@s.Name</td><td class="num">@s.Quantity.ToString("0.00")</td></tr> }
+    </tbody>
+</table>

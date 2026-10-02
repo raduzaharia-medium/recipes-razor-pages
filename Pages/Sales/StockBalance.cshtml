@@ -1,0 +1,43 @@
+@page "/sales/stock-balance"
+@model BalantaModel
+@{
+    if (Model.Print) Layout = "_Print";
+    ViewData["Title"] = "Stock balance";
+    ViewData["Menu"] = "sales";
+    string period = Model.PeZi ? $"date={Model.Day:yyyy-MM-dd}" : $"month={Model.Month:yyyy-MM}";
+}
+@if (Model.Print)
+{
+    <h1>Stock balance - @Model.Title</h1>
+    <partial name="_StockBalanceTable" model="Model.Items" />
+    <p class="signature">Storekeeper<br>@Model.Storekeeper</p>
+}
+else
+{
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="print"><a href="/sales/stock-balance?@period&print=true" target="_blank">Print</a></p>
+                <p class="toolbox" data-icon="back"><a href="/sales">Back to sales</a></p>
+            </fieldset>
+            <partial name="_Reports" />
+            <fieldset>
+                <legend>Report settings</legend>
+                <form method="get">
+                    <p class="field"><label for="month">By month</label><input type="month" id="month" name="month" value="@Model.Month.ToString("yyyy-MM")"><button type="submit">Generate</button></p>
+                </form>
+                <form method="get">
+                    <p class="field"><label for="date">By day</label><input type="date" id="date" name="date" value="@Model.Day.ToString("yyyy-MM-dd")"><button type="submit">Generate</button></p>
+                </form>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <fieldset>
+                <legend>Stock balance - @Model.Title</legend>
+                <partial name="_StockBalanceTable" model="Model.Items" />
+            </fieldset>
+        </section>
+    </div>
+}

@@ -1,0 +1,79 @@
+@page "/sales/{id:int}/invoice"
+@model InvoiceModel
+@{
+    Layout = "_Print";
+    ViewData["Title"] = "Invoice";
+    var v = Model.Sale;
+    var u = Model.Options.Company;
+    var d = Model.Options.Delegate;
+    var issuer = Model.Options.InvoiceIssuer;
+    string N(decimal value) => value.ToString("0.00");
+    string Rate(decimal vat) => $"{vat * 100:0.##}%";
+}
+<table width="100%" style="border:0">
+    <tr>
+        <td style="width:33%;vertical-align:top;border:0">
+            Supplier: @u.Name<br>Trade register no.: @u.TradeRegisterNo<br>Tax ID: @u.TaxId<br>Head office: @u.HeadOffice<br>Branch: @u.Branch<br>Account: @u.Account
+        </td>
+        <td style="width:33%;text-align:center;border:0">
+            <h2>INVOICE</h2>
+            Invoice no.: @v.InvoiceSeries @((v.InvoiceNumber ?? 0).ToString().PadLeft(6, '0'))<br>Invoice date: @Time.Today.ToString("dd/MM/yyyy")
+        </td>
+        <td style="width:33%;vertical-align:top;border:0">
+            Buyer: @v.CustomerName<br>Address: @v.CustomerAddress, @v.CustomerCounty<br>Bank: @v.CustomerBank<br>Account: @v.CustomerAccount<br>Trade register no.: @v.CustomerTradeRegisterNo<br>Tax ID: @v.CustomerTaxId
+        </td>
+    </tr>
+</table>
+<br>
+<table class="invoice" style="height:500px">
+    <tr style="text-align:center"><td>No.</td><td colspan="2">Description of goods or services</td><td>Unit</td><td>Quantity</td><td>Unit price<br>(excl. VAT)<br>RON</td><td>Value<br>RON</td><td>VAT<br>%</td><td>VAT<br>value<br>RON</td></tr>
+    <tr style="text-align:center"><td>0</td><td colspan="2">1</td><td>2</td><td>3</td><td>4</td><td>5 (3 * 4)</td><td>6</td><td>7</td></tr>
+    @if (Model.PrintLineItems)
+    {
+        @for (int i = 0; i < Model.Items.Count; i++)
+        {
+            var e = Model.Items[i];
+            <tr>
+                <td class="plain center">@(i + 1)</td><td colspan="2" class="plain">@e.Name</td><td class="plain center">portion</td><td class="plain center">@e.Portions.ToString("0.##")</td>
+                <td class="plain center">@N(e.Net)</td><td class="plain center">@N(e.NetValue)</td><td class="plain center">@Rate(e.Vat)</td><td class="plain center">@N(e.VatValue)</td>
+            </tr>
+        }
+    }
+    else
+    {
+        @* one line per VAT rate *@
+        int n = 0;
+        @foreach (var group in Model.Items.GroupBy(e => e.Vat).OrderBy(g => g.Key))
+        {
+            <tr>
+                <td class="plain center">@(++n)</td><td colspan="2" class="plain">Products as per fiscal receipt no. ...........@(Model.Items.Select(e => e.Vat).Distinct().Count() > 1 ? $" (VAT {Rate(group.Key)})" : "")</td><td class="plain center">-</td><td class="plain center">1</td>
+                <td class="plain center">@N(group.Sum(e => e.NetValue))</td><td class="plain center">@N(group.Sum(e => e.NetValue))</td><td class="plain center">@Rate(group.Key)</td><td class="plain center">@N(group.Sum(e => e.VatValue))</td>
+            </tr>
+        }
+    }
+    <tr style="height:100%">
+        <td class="plain"></td><td colspan="2" class="plain" style="vertical-align:bottom">@issuer.Name<br>@issuer.IdCardSeries @issuer.IdCardNumber Personal ID @issuer.PersonalId</td>
+        <td class="plain"></td><td class="plain"></td><td class="plain"></td><td class="plain"></td><td class="plain"></td><td class="plain"></td>
+    </tr>
+    <tr>
+        <td colspan="2" rowspan="2" style="vertical-align:top">Supplier signature<br>and stamp</td>
+        <td colspan="3" rowspan="2">
+            Shipping details<br>Delegate name: @d.Name<br>ID card series: @d.IdCardSeries, no.: @d.IdCardNumber, issued by: @d.IdCardIssuer<br>
+            Means of transport: @d.Transport<br>Shipped in our presence on: @Time.Now.ToString("dd/MM/yyyy"), at: @Time.Now.ToString("HH:mm:ss")<br>Signatures: .................................
+        </td>
+        <td style="vertical-align:top">Total</td>
+        <td class="center">@N(Model.Items.Sum(e => e.NetValue))</td><td></td><td class="center">@N(Model.Items.Sum(e => e.VatValue))</td>
+    </tr>
+    <tr>
+        <td>Recipient<br>signature</td>
+        <td colspan="3"><strong>Total to pay<br>(col. 5 + col. 7)<br><div style="text-align:center">@N(Model.Items.Sum(e => e.Price * e.Portions))</div></strong></td>
+    </tr>
+</table>
+<br>
+<table class="invoice" style="width:50%">
+    <tr style="text-align:center"><td>VAT rate</td><td>Taxable value<br>RON</td><td>VAT<br>RON</td><td>Total<br>RON</td></tr>
+    @foreach (var group in Model.Items.GroupBy(e => e.Vat).OrderBy(g => g.Key))
+    {
+        <tr class="center"><td>@Rate(group.Key)</td><td>@N(group.Sum(e => e.NetValue))</td><td>@N(group.Sum(e => e.VatValue))</td><td>@N(group.Sum(e => e.Price * e.Portions))</td></tr>
+    }
+</table>

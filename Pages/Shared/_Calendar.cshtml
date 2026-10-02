@@ -1,0 +1,30 @@
+@* Month calendar: every day links to the current page with ?date=yyyy-MM-dd. Model: the selected date. *@
+@model DateOnly
+@{
+    var path = Context.Request.Path.Value;
+    var month = DateOnly.TryParseExact(Context.Request.Query["month"], "yyyy-MM", out var requested) ? requested : new DateOnly(Model.Year, Model.Month, 1);
+    var previous = month.AddMonths(-1);
+    var nextMonth = month.AddMonths(1);
+    int blanks = ((int)month.DayOfWeek + 6) % 7; // the week starts on Monday
+    string Link(DateOnly day, DateOnly monthShown) => $"{path}?date={day:yyyy-MM-dd}&month={monthShown:yyyy-MM}";
+    var months = new[] { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
+}
+<fieldset>
+    <legend>Select date</legend>
+    <div class="calendar">
+        <div class="calendar-head">
+            <a href="@Link(Model, previous)" aria-label="Previous month">◀</a>
+            <a class="month" href="@path" title="Go to today">@months[month.Month - 1] @month.Year</a>
+            <a href="@Link(Model, nextMonth)" aria-label="Next month">▶</a>
+        </div>
+        <div class="calendar-grid">
+            @foreach (var day in new[] { "M", "T", "W", "T", "F", "S", "S" }) { <span class="weekday">@day</span> }
+            @for (int i = 0; i < blanks; i++) { <span></span> }
+            @for (int day = 1; day <= DateTime.DaysInMonth(month.Year, month.Month); day++)
+            {
+                var date = new DateOnly(month.Year, month.Month, day);
+                <a class="day@(date == Model ? " selected" : "")@(date == Time.Today ? " today" : "")" href="@Link(date, month)">@day</a>
+            }
+        </div>
+    </div>
+</fieldset>

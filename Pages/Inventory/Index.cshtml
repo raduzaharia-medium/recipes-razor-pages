@@ -1,0 +1,44 @@
+@page "/inventory"
+@model IndexModel
+@{
+    ViewData["Title"] = "Inventory";
+    ViewData["Menu"] = "inventory";
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="stock"><a href="/inventory/stock-count">Stock count</a></p>
+            <p class="toolbox" data-icon="plus"><a href="/inventory/new-product">New product</a></p>
+            <p class="toolbox" data-icon="print"><a href="/inventory/print" target="_blank">Print</a></p>
+        </fieldset>
+        <partial name="_Calendar" model="Model.Day" />
+        <partial name="_OtherPlaces" />
+    </aside>
+
+    <section class="content">
+        <fieldset>
+            <legend>@Model.Title</legend>
+            <form method="get" class="filter-form">
+                <input type="hidden" name="date" value="@Model.Day.ToString("yyyy-MM-dd")">
+                <input type="search" name="q" value="@Model.Q" placeholder="Search by code or name...">
+                <button type="submit">Search</button>
+            </form>
+            <table class="grid">
+                <thead>
+                    <tr><th style="width:32px"></th><th style="width:90px">Code</th><th>Product</th><th style="width:120px">Category</th><th style="width:70px">Unit</th><th style="width:110px">Purchase price</th><th style="width:110px">Selling price</th><th style="width:120px">Quantity</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Stock)
+                    {
+                        <tr>
+                            <td><a class="icon-button" href="/inventory/delete/@s.Id" title="Delete or replace product">✕</a></td>
+                            <td>@s.Code</td><td>@s.Name</td><td>@s.Category</td><td>@s.UnitOfMeasure</td>
+                            <td class="num">@s.PurchasePrice.ToString("0.00")</td><td class="num">@s.Price.ToString("0.00")</td><td class="num">@s.Quantity.ToString("0.00")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </fieldset>
+    </section>
+</div>

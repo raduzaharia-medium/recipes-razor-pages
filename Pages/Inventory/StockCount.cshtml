@@ -1,0 +1,74 @@
+@page "/inventory/stock-count"
+@model StockCountModel
+@{
+    ViewData["Title"] = "Stock count";
+    ViewData["Menu"] = "inventory";
+}
+<form method="post" action="@Model.FormAction">
+    @Html.AntiForgeryToken()
+    <button type="submit" asp-page-handler="Add" class="hidden-default" tabindex="-1">Add</button>
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="check"><button type="submit" class="primary">Save</button></p>
+                <p class="toolbox" data-icon="close"><a href="/inventory">Cancel</a></p>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <div asp-validation-summary="All" class="errors"></div>
+            <fieldset>
+                <legend>Stock count</legend>
+                <input type="search" class="filter" data-filter="#stock" placeholder="Filter by code or name...">
+                <table class="grid" id="stock">
+                    <thead>
+                        <tr><th style="width:32px"></th><th style="width:90px">Code</th><th>Product</th><th style="width:130px">Category</th><th style="width:70px">Unit</th><th style="width:90px">Theoretical</th><th style="width:110px">Quantity</th><th style="width:110px">Purchase price</th><th style="width:110px">Selling price</th><th style="width:45px"></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr class="insertion" data-enter="#add">
+                            <td></td>
+                            <td><input asp-for="NewRow.Code" placeholder="@Model.LastProductCode"></td>
+                            <td><input asp-for="NewRow.Name"></td>
+                            <td><input asp-for="NewRow.Category" data-autocomplete="/lookup?handler=Categories" data-min-length="1"></td>
+                            <td><input asp-for="NewRow.UnitOfMeasure"></td>
+                            <td></td>
+                            <td><input asp-for="NewRow.Quantity" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td><input asp-for="NewRow.PurchasePrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td><input asp-for="NewRow.Price" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                            <td><button type="submit" id="add" asp-page-handler="Add" title="Add new product">+</button></td>
+                        </tr>
+                        @for (int i = 0; i < Model.NewProducts.Count; i++)
+                        {
+                            <tr>
+                                <td></td>
+                                <td>@Model.NewProducts[i].Code<input asp-for="NewProducts[i].Code" type="hidden"></td>
+                                <td>@Model.NewProducts[i].Name<input asp-for="NewProducts[i].Name" type="hidden"></td>
+                                <td>@Model.NewProducts[i].Category<input asp-for="NewProducts[i].Category" type="hidden"></td>
+                                <td>@Model.NewProducts[i].UnitOfMeasure<input asp-for="NewProducts[i].UnitOfMeasure" type="hidden"></td>
+                                <td class="num">newRow</td>
+                                <td class="insertion-cell"><input asp-for="NewProducts[i].Quantity" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td class="insertion-cell"><input asp-for="NewProducts[i].PurchasePrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td class="insertion-cell"><input asp-for="NewProducts[i].Price" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Remove" asp-route-index="@i" title="Delete">✕</button></td>
+                            </tr>
+                        }
+                        @for (int i = 0; i < Model.Lines.Count; i++)
+                        {
+                            var d = Model.Details[Model.Lines[i].Id];
+                            <tr data-search="@($"{d.Code} {d.Name}".ToLowerInvariant())">
+                                <td><input asp-for="Lines[i].Id" type="hidden"></td>
+                                <td>@d.Code</td><td>@d.Name</td><td>@d.Category</td><td>@d.UnitOfMeasure</td>
+                                <td class="num">@d.TheoreticalQuantity.ToString("0.00")</td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].Quantity" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].PurchasePrice" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td class="insertion-cell"><input asp-for="Lines[i].Price" class="num" inputmode="decimal" asp-format="{0:0.####}"></td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </fieldset>
+        </section>
+    </div>
+</form>

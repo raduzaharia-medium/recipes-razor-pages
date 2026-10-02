@@ -1,0 +1,66 @@
+@page "/recipes"
+@model IndexModel
+@{
+    ViewData["Title"] = "Recipes";
+    ViewData["Menu"] = "recipes";
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="plus"><a href="/recipes/edit">New recipe</a></p>
+            <p class="toolbox" data-icon="plus"><a href="/inventory/new-product">New product</a></p>
+            <p class="toolbox" data-icon="save"><button type="submit" form="prices" asp-page-handler="SavePrices">Save price changes</button></p>
+        </fieldset>
+        <partial name="_OtherPlaces" />
+    </aside>
+
+    <section class="content">
+        <fieldset>
+            <legend>Find recipe</legend>
+            <form method="get">
+                <p class="field">
+                    <label for="Category">Category</label>
+                    <select name="category" id="Category" onchange="this.form.submit()">
+                        <option value="">(all)</option>
+                        @foreach (var c in Model.Categories) { <option value="@c" selected="@(c == Model.Category)">@c</option> }
+                    </select>
+                </p>
+                <p class="field">
+                    <label for="Q">Name</label>
+                    <input name="q" id="Q" value="@Model.Q" placeholder="code or name">
+                    <button type="submit">Filter</button>
+                </p>
+            </form>
+        </fieldset>
+
+        <form method="post" id="prices">
+            <input type="hidden" name="category" value="@Model.Category">
+            <input type="hidden" name="q" value="@Model.Q">
+            <div asp-validation-summary="All" class="errors"></div>
+            <fieldset>
+                <legend>Filtered recipes</legend>
+                <table class="grid">
+                    <thead>
+                        <tr><th style="width:32px"></th><th style="width:90px">Code</th><th style="width:150px">Category</th><th>Recipe</th><th style="width:140px">Quantity</th><th style="width:130px">Price</th></tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.Recipes.Count; i++)
+                        {
+                            var r = Model.Recipes[i];
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Delete" asp-route-id="@r.ID" data-confirm="Delete recipe @r.Name?" title="Delete">✕</button></td>
+                                <td>@r.Code</td><td>@r.Category</td>
+                                <td><a href="/recipes/edit/@r.ID">@r.Name</a></td><td>@r.Quantity</td>
+                                <td class="insertion-cell">
+                                    <input type="hidden" name="Prices[@i].Id" value="@r.ID">
+                                    <input name="Prices[@i].Price" value="@r.Price.ToString("0.00")" class="num" inputmode="decimal">
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </fieldset>
+        </form>
+    </section>
+</div>

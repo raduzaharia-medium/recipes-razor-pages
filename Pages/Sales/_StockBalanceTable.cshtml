@@ -1,0 +1,10 @@
+@model List<BalantaLinie>
+<table class="grid">
+    <thead><tr><th style="width:90px">Code</th><th>Product</th><th style="width:110px">Opening stock</th><th style="width:110px">Purchased</th><th style="width:110px">Sold</th><th style="width:110px">Closing stock</th></tr></thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr><td>@e.Code</td><td>@e.Product</td><td class="num">@e.OpeningStock.ToString("0.##")</td><td class="num">@e.PurchasedQuantity.ToString("0.##")</td><td class="num">@e.SoldQuantity.ToString("0.##")</td><td class="num">@e.ClosingStock.ToString("0.##")</td></tr>
+        }
+    </tbody>
+</table>

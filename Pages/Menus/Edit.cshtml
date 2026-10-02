@@ -1,0 +1,64 @@
+@page "/menus/edit/{id:int?}"
+@model EditModel
+@{
+    ViewData["Title"] = Model.Id is null ? "New menu" : "Menu";
+    ViewData["Menu"] = "menus";
+}
+<form method="post" action="@Model.FormAction">
+    @Html.AntiForgeryToken()
+    <button type="submit" asp-page-handler="Add" class="hidden-default" tabindex="-1">Add</button>
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="check"><button type="submit" class="primary">Save</button></p>
+                <p class="toolbox" data-icon="close"><a href="/menus">Cancel</a></p>
+                <p class="toolbox" data-icon="plus"><a href="/recipes/edit" target="_blank">New recipe</a></p>   @* new tab: the menu being typed is not lost *@
+                @if (Model.Id is not null) { <p class="toolbox" data-icon="copy"><button type="submit" asp-page-handler="Clone">Clone menu</button></p> }
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+
+        <section class="content">
+            <div asp-validation-summary="All" class="errors"></div>
+            <fieldset>
+                <legend>@(Model.Id is null ? "New menu" : "Edit menu")</legend>
+                <p class="field"><label asp-for="Input.Code">Code</label><input asp-for="Input.Code" placeholder="@Model.LastMenuCode"></p>
+                <p class="field"><label asp-for="Input.Name">Name</label><input asp-for="Input.Name"></p>
+                <p class="field"><label asp-for="Input.Price">Price and VAT %</label><input asp-for="Input.Price" class="half num" inputmode="decimal" asp-format="{0:0.00}"><input asp-for="Input.VatPercent" class="half num" inputmode="decimal" asp-format="{0:0.##}"></p>
+                <p class="field"><label asp-for="Input.ValidOn">Valid on</label><input asp-for="Input.ValidOn" type="date"><small class="muted">leave empty if the menu is always valid</small></p>
+            </fieldset>
+
+            <fieldset>
+                <legend>Recipes in this menu</legend>
+                <table class="grid">
+                    <thead><tr><th style="width:32px"></th><th style="width:90px">Code</th><th>Recipe</th><th style="width:110px">Price</th><th style="width:110px">Portions</th><th style="width:45px"></th></tr></thead>
+                    <tbody>
+                        <tr class="insertion" data-enter="#add">
+                            <td></td><td></td>
+                            <td>
+                                <input asp-for="NewRow.Search" placeholder="recipe code or name" data-autocomplete="/lookup?handler=Recipes" data-id-target="NewRow.RecipeId">
+                                <input asp-for="NewRow.RecipeId" type="hidden">
+                            </td>
+                            <td></td>
+                            <td><input asp-for="NewRow.Portions" class="num" inputmode="decimal" asp-format="{0:0.##}"></td>
+                            <td><button type="submit" id="add" asp-page-handler="Add" title="Add">+</button></td>
+                        </tr>
+                        @for (int i = 0; i < Model.Recipes.Count; i++)
+                        {
+                            var r = Model.Details[Model.Recipes[i].RecipeId];
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Remove" asp-route-index="@i" title="Delete">✕</button></td>
+                                <td>@r.Code</td>
+                                <td>@r.Name<input asp-for="Recipes[i].RecipeId" type="hidden"></td>
+                                <td class="num">@r.Price.ToString("0.00")</td>
+                                <td class="insertion-cell"><input asp-for="Recipes[i].Portions" class="num" inputmode="decimal" asp-format="{0:0.##}"></td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </fieldset>
+        </section>
+    </div>
+</form>

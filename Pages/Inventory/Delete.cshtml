@@ -1,0 +1,52 @@
+@page "/inventory/delete/{id:int}"
+@model DeleteModel
+@{
+    ViewData["Title"] = "Delete product";
+    ViewData["Menu"] = "inventory";
+}
+<form method="post">
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="check"><button type="submit" class="primary" data-confirm="The product will be deleted. Continue?">Delete</button></p>
+                <p class="toolbox" data-icon="close"><a href="/inventory">Cancel</a></p>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <div asp-validation-summary="All" class="errors"></div>
+            <fieldset>
+                <legend>Product details</legend>
+                <p class="field"><label>Code</label><strong>@Model.Product.Code</strong></p>
+                <p class="field"><label>Product</label><strong>@Model.Product.Name</strong></p>
+                <p class="field"><label>Category</label>@Model.Product.Category</p>
+                <p class="field"><label>Unit</label>@Model.Product.UnitOfMeasure</p>
+            </fieldset>
+            <fieldset>
+                <legend>Replace in recipes, goods receipts and sales with product</legend>
+                @if (Model.HasGoodsReceipts || Model.HasSales)
+                {
+                    <p class="muted">This product has goods receipts or sales, so it can only be replaced.</p>
+                }
+                <p class="field">
+                    <label for="Replacement">Replacement product</label>
+                    <input asp-for="Replacement" placeholder="code or name" data-autocomplete="/lookup?handler=Products" data-id-target="ReplacementId">
+                    <input asp-for="ReplacementId" type="hidden">
+                </p>
+            </fieldset>
+            @if (Model.Recipes.Count > 0)
+            {
+                <fieldset>
+                    <legend>Recipes using this product</legend>
+                    <table class="grid">
+                        <thead><tr><th style="width:90px">Code</th><th>Recipe</th><th style="width:120px">Quantity</th></tr></thead>
+                        <tbody>
+                            @foreach (var r in Model.Recipes) { <tr><td>@r.Recipe.Code</td><td><a href="/recipes/edit/@r.RecipeId">@r.Recipe.Name</a></td><td class="num">@r.Quantity.ToString("0.##")</td></tr> }
+                        </tbody>
+                    </table>
+                </fieldset>
+            }
+        </section>
+    </div>
+</form>

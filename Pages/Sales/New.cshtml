@@ -1,0 +1,119 @@
+@page "/sales/new"
+@model NewModel
+@{
+    ViewData["Title"] = "New sale";
+    ViewData["Menu"] = "sales";
+    string Rotund(decimal value) => value.ToString("0.00");
+}
+<form method="post" action="@Model.FormAction">
+    @Html.AntiForgeryToken()
+    <button type="submit" asp-page-handler="Add" class="hidden-default" tabindex="-1">Add</button>
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="check"><button type="submit" class="primary">Record sale</button></p>
+                <p class="toolbox" data-icon="reset"><a href="/sales/new">Reset sale</a></p>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+
+        <section class="content">
+            <div asp-validation-summary="All" class="errors"></div>
+            <div class="columns">
+                <fieldset>
+                    <legend>Sale details</legend>
+                    <p class="field">
+                        <label asp-for="Input.Type">Sale type</label>
+                        <select asp-for="Input.Type" asp-items="Model.SaleTypes" data-sync-check="Input.PrintFiscalReceipt" data-sync-values="@string.Join('|', SaleType.Register)"></select>
+                    </p>
+                    <p class="field">
+                        <label asp-for="Input.Date">Date</label>
+                        <input asp-for="Input.Date" type="date">
+                    </p>
+                    <p class="field">
+                        <label asp-for="Input.CustomerName">Customer</label>
+                        <input asp-for="Input.CustomerName" data-autocomplete="/lookup?handler=Customers"
+                               data-fill='{"Input.CustomerAddress":"address","Input.CustomerCounty":"county","Input.CustomerTaxId":"taxId","Input.CustomerTradeRegisterNo":"tradeRegisterNo","Input.CustomerAccount":"account","Input.CustomerBank":"bank"}'>
+                    </p>
+                    <p class="field">
+                        <label>Print</label>
+                        <span class="checks">
+                            <label class="inline"><input asp-for="Input.PrintFiscalReceipt"> Fiscal receipt</label>
+                            <label class="inline"><input asp-for="Input.PrintInvoice"> Invoice</label>
+                        </span>
+                    </p>
+                    <div data-show-when="Input.PrintInvoice">
+                        <p class="field"><label asp-for="Input.InvoiceSeries">Invoice series and no.</label><input asp-for="Input.InvoiceSeries" class="half"><input asp-for="Input.InvoiceNumber" class="half num" inputmode="numeric"><label class="inline"><input asp-for="Input.PrintLineItems"> Print line items</label></p>
+                        <p class="field"><label asp-for="Input.CustomerAddress">Address and county</label><input asp-for="Input.CustomerAddress" class="two-thirds"><input asp-for="Input.CustomerCounty" class="third"></p>
+                        <p class="field"><label asp-for="Input.CustomerTaxId">Tax ID and trade reg. no.</label><input asp-for="Input.CustomerTaxId" class="half"><input asp-for="Input.CustomerTradeRegisterNo" class="half"></p>
+                        <p class="field"><label asp-for="Input.CustomerAccount">Account and bank</label><input asp-for="Input.CustomerAccount" class="half"><input asp-for="Input.CustomerBank" class="half"></p>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Meal vouchers</legend>
+                    <table class="grid">
+                        <thead><tr><th>Voucher value</th><th>Number</th><th>Value</th><th style="width:45px"></th></tr></thead>
+                        <tbody>
+                            <tr class="insertion" data-enter="#add-voucher">
+                                <td><input asp-for="NewVoucher.VoucherValue" class="num" inputmode="decimal" asp-format="{0:0.##}"></td>
+                                <td><input asp-for="NewVoucher.Number" class="num" inputmode="numeric"></td>
+                                <td></td>
+                                <td><button type="submit" id="add-voucher" asp-page-handler="AddVoucher" title="Add voucher">+</button></td>
+                            </tr>
+                            @for (int i = 0; i < Model.Vouchers.Count; i++)
+                            {
+                                <tr>
+                                    <td class="num">@Rotund(Model.Vouchers[i].VoucherValue)<input asp-for="Vouchers[i].VoucherValue" type="hidden"></td>
+                                    <td class="insertion-cell"><input asp-for="Vouchers[i].Number" class="num" inputmode="numeric"></td>
+                                    <td class="num">@Rotund(Model.Vouchers[i].VoucherValue * Model.Vouchers[i].Number)</td>
+                                    <td></td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot><tr><td>Total:</td><td></td><td class="num">@Rotund(Model.VouchersValue)</td><td></td></tr></tfoot>
+                    </table>
+                </fieldset>
+            </div>
+
+            <fieldset>
+                <legend>Products sold</legend>
+                <table class="grid">
+                    <thead><tr><th style="width:32px"></th><th style="width:90px">Code</th><th>Menu, recipe or product</th><th style="width:110px">Price</th><th style="width:110px">Portions</th><th style="width:120px">Value</th><th style="width:45px"></th></tr></thead>
+                    <tbody>
+                        <tr class="insertion" data-enter="#add">
+                            <td></td><td></td>
+                            <td>
+                                <input asp-for="NewRow.Search" placeholder="code or name" data-autocomplete="/lookup?handler=Items" data-id-target="NewRow.ItemId" data-type-target="NewRow.Type" autofocus>
+                                <input asp-for="NewRow.ItemId" type="hidden">
+                                <input asp-for="NewRow.Type" type="hidden">
+                            </td>
+                            <td></td>
+                            <td><input asp-for="NewRow.Portions" class="num" inputmode="decimal" asp-format="{0:0.##}"></td>
+                            <td></td>
+                            <td><button type="submit" id="add" asp-page-handler="Add" title="Add">+</button></td>
+                        </tr>
+                        @for (int i = 0; i < Model.Items.Count; i++)
+                        {
+                            var e = Model.Items[i];
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Remove" asp-route-index="@i" title="Delete">✕</button></td>
+                                <td>@e.Code<input asp-for="Items[i].Code" type="hidden"><input asp-for="Items[i].Type" type="hidden"><input asp-for="Items[i].ItemId" type="hidden"></td>
+                                <td>@e.Name<input asp-for="Items[i].Name" type="hidden"></td>
+                                <td class="num">@Rotund(e.Price)<input asp-for="Items[i].Price" type="hidden"></td>
+                                <td class="insertion-cell"><input asp-for="Items[i].Portions" class="num" inputmode="decimal" asp-format="{0:0.##}"></td>
+                                <td class="num">@Rotund(e.Price * e.Portions)</td>
+                                <td></td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr><td></td><td></td><td>Total:</td><td></td><td></td><td class="num"><strong class="big">@Rotund(Model.Value)</strong></td><td></td></tr>
+                        <tr><td></td><td></td><td>Total with meal vouchers: <button type="submit" class="link" asp-page-handler="Refresh">recalculate</button></td><td></td><td></td><td class="num"><strong class="big">@Rotund(Model.Value - Model.VouchersValue)</strong></td><td></td></tr>
+                    </tfoot>
+                </table>
+            </fieldset>
+        </section>
+    </div>
+</form>

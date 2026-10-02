@@ -1,0 +1,40 @@
+@page "/menus"
+@model IndexModel
+@{
+    ViewData["Title"] = "Menus";
+    ViewData["Menu"] = "menus";
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="plus"><a href="/menus/edit?date=@Model.Day.ToString("yyyy-MM-dd")">New menu</a></p>
+            <p class="toolbox" data-icon="calendar"><a href="/menus/week">Weekly menu</a></p>
+        </fieldset>
+        <partial name="_Calendar" model="Model.Day" />
+        <partial name="_OtherPlaces" />
+    </aside>
+
+    <section class="content">
+        <form method="post">
+            <input type="hidden" name="date" value="@Model.Day.ToString("yyyy-MM-dd")">
+            <fieldset>
+                <legend>@Model.Title</legend>
+                <table class="grid">
+                    <thead><tr><th style="width:32px"></th><th style="width:90px">Code</th><th>Name</th><th style="width:140px">Price</th></tr></thead>
+                    <tbody>
+                        @foreach (var m in Model.Menus)
+                        {
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Delete" asp-route-id="@m.ID" data-confirm="Delete menu @m.Name?" title="Delete">✕</button></td>
+                                <td>@m.Code</td>
+                                <td><a href="/menus/edit/@m.ID">@m.Name</a>@if (m.ValidOn is null) { <small class="muted"> (any day)</small> }</td>
+                                <td class="num">@m.Price.ToString("0.00")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </fieldset>
+        </form>
+    </section>
+</div>

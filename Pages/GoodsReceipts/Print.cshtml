@@ -1,0 +1,58 @@
+@page "/goods-receipts/{id:int}/print"
+@model PrintModel
+@{
+    Layout = "_Print";
+    ViewData["Title"] = $"Goods receipt {Model.GoodsReceipt.Number}";
+    var r = Model.GoodsReceipt;
+    string N(decimal v) => v.ToString("0.00");
+}
+<h1>Goods receipt @r.Number dated @r.Date.ToString("dd/MM/yyyy")</h1>
+<strong>Supplier: </strong>@r.SupplierName<br>
+For delivery document type @r.DeliveryDocumentType, number @r.DeliveryDocumentNumber<br><br>
+
+@foreach (var group in Model.GoodsReceipt.Products.GroupBy(l => l.Product.Category))
+{
+    <strong>Category: </strong>@group.Key
+    <table style="width:100%">
+        <thead><tr><th>Code</th><th>Product</th><th>Unit</th><th>Pack size</th><th>Qty</th><th>Price</th><th>Value</th><th>VAT %</th><th>VAT</th><th>Value incl. VAT</th><th>Selling price</th><th>Markup</th></tr></thead>
+        <tbody>
+            @foreach (var l in group)
+            {
+                <tr>
+                    <td>@l.Product.Code</td><td>@l.Product.Name</td><td class="center">@l.Product.UnitOfMeasure</td><td class="num">@l.PackSize.ToString("0.##")</td><td class="num">@l.Quantity.ToString("0.##")</td>
+                    <td class="num">@N(l.PurchasePrice)</td><td class="num">@N(l.Value)</td><td class="num">@((l.Vat * 100).ToString("0.##"))%</td><td class="num">@N(l.VatValue)</td><td class="num">@N(l.ValueWithVat)</td>
+                    <td class="num">@N(l.SellingPrice)</td><td class="num">@((l.PurchasePriceWithVat > 0 ? (l.SellingPrice / l.PurchasePriceWithVat - 1) * 100 : 0).ToString("0"))%</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot><tr><td></td><td></td><td></td><td></td><td></td><td></td><td class="num">@N(group.Sum(l => l.Value))</td><td></td><td class="num">@N(group.Sum(l => l.VatValue))</td><td class="num">@N(group.Sum(l => l.ValueWithVat))</td><td></td><td></td></tr></tfoot>
+    </table>
+}
+
+<strong>Totals by VAT group</strong>
+<table>
+    <thead><tr><th>VAT rate</th><th>Value</th><th>VAT</th><th>Value incl. VAT</th></tr></thead>
+    <tbody>
+        @foreach (var group in r.Products.GroupBy(l => l.Vat).OrderBy(g => g.Key))
+        {
+            <tr><td>@((group.Key * 100).ToString("0.##"))%</td><td class="num">@N(group.Sum(l => l.Value))</td><td class="num">@N(group.Sum(l => l.VatValue))</td><td class="num">@N(group.Sum(l => l.ValueWithVat))</td></tr>
+        }
+    </tbody>
+    <tfoot><tr><td>Total</td><td class="num">@N(r.TotalValue)</td><td class="num">@N(r.TotalVat)</td><td class="num">@N(r.TotalWithVat)</td></tr></tfoot>
+</table>
+
+@if (Model.ChangedPrices.Count > 0)
+{
+    <h1>Price change report</h1>
+    <strong>These products have a different selling price than at the previous goods receipt</strong>
+    <table style="width:100%">
+        <thead><tr><th>Code</th><th>Product</th><th>Unit</th><th>Previous price</th><th>Current price</th></tr></thead>
+        <tbody>
+            @foreach (var p in Model.ChangedPrices)
+            {
+                <tr><td>@p.Product.Code</td><td>@p.Product.Name</td><td class="center">@p.Product.UnitOfMeasure</td><td class="num">@N(p.OldPrice)</td><td class="num">@N(p.NewPrice)</td></tr>
+            }
+        </tbody>
+    </table>
+}
+<p class="signature">Storekeeper<br>@Model.Storekeeper</p>

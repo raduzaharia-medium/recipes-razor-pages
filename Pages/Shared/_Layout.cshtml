@@ -1,0 +1,43 @@
+@{
+    string? Active(string menu) => Equals(ViewData["Menu"], menu) ? "active" : null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@ViewData["Title"] - Recipes</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>">
+    <link rel="stylesheet" href="~/css/app.css" asp-append-version="true">
+    <script src="~/js/site.js" asp-append-version="true" defer></script>
+</head>
+<body>
+    <img src="~/images/Experimental.png" alt="" style="position: absolute; left: 0px; top: 0px; z-index: -1" />
+
+    <div id="header">
+        <div id="title">
+            <h1>
+                <img src="~/images/Food.png" alt="Main" height="30px" />
+                Recipes - @ViewData["Title"]
+            </h1>
+        </div>
+
+        <div id="menucontainer">
+            <ul id="menu">
+                <li><a href="/sales" class="@Active("sales")">Sales</a></li>
+                <li><a href="/menus" class="@Active("menus")">Menus</a></li>
+                <li><a href="/recipes" class="@Active("recipes")">Recipes</a></li>
+                <li><a href="/goods-receipts" class="@Active("goods-receipts")">Goods receipts</a></li>
+                <li><a href="/inventory" class="@Active("inventory")">Inventory</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="main">
+        @if (TempData["Message"] is string message) { <p class="notice ok" role="status">@message</p> }
+        @if (TempData["Error"] is string error) { <p class="notice error" role="alert">@error</p> }
+        @RenderBody()
+        <div id="footer">&copy; @Time.Now.Year</div>
+    </div>
+</body>
+</html>

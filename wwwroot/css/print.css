@@ -1,0 +1,12 @@
+body { font: 11pt Calibri, Arial, sans-serif; color: #222; margin: 1.5cm; }
+h1 { font-size: 16pt; } h2 { font-size: 12pt; }
+table { border-collapse: collapse; margin-bottom: 1em; }
+th, td { padding: 2px 6px; border-left: 1px solid #999; border-right: 1px solid #999; text-align: left; }
+thead th { border: 1px solid #999; text-align: center; }
+tfoot td { border-top: 1px solid #999; border-left: 0; border-right: 0; font-weight: bold; }
+td.num { text-align: right; } td.center { text-align: center; }
+.signature { margin-top: 1.5em; font-weight: bold; }
+.invoice { border: 1px solid #999; width: 100%; font: 9px Arial; }
+.invoice td { border: 1px solid #999; padding: 3px; }
+.invoice td.plain { border-width: 0 1px; }
+.no-print { display: none; }

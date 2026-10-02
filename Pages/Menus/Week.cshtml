@@ -1,0 +1,33 @@
+@page "/menus/week"
+@model WeekModel
+@{
+    ViewData["Title"] = "Weekly menu";
+    ViewData["Menu"] = "menus";
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="print"><a href="/menus/week/print" target="_blank">Print</a></p>
+            <p class="toolbox" data-icon="back"><a href="/menus">Back to menus</a></p>
+        </fieldset>
+        <partial name="_OtherPlaces" />
+    </aside>
+    <section class="content">
+        <fieldset>
+            <legend>Weekly menu</legend>
+            @if (Model.Days.Count == 0) { <p class="muted">No menus are scheduled for this week.</p> }
+            @foreach (var day in Model.Days)
+            {
+                <h3 class="day">@Model.DayName(day.Key)</h3>
+                @foreach (var m in day)
+                {
+                    <div class="card">
+                        <strong>@m.Name</strong> (@m.Code) - @m.Price.ToString("0.00") RON
+                        <ul>@foreach (var r in m.Recipes) { <li>@r.Recipe.Name - @r.Portions.ToString("0.##") portions</li> }</ul>
+                    </div>
+                }
+            }
+        </fieldset>
+    </section>
+</div>

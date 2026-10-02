@@ -1,0 +1,13 @@
+@page "/recipes/{id:int}/print"
+@model PrintModel
+@{
+    Layout = "_Print";
+    ViewData["Title"] = Model.Recipe.Name;
+}
+<h1>@Model.Recipe.Name</h1>
+<table>
+    <thead><tr><th style="width:300px">Product</th><th>Quantity</th></tr></thead>
+    <tbody>
+        @foreach (var p in Model.Recipe.Products) { <tr><td>@p.Product.Name</td><td class="num">@p.Quantity.ToString("0.##") @p.Product.UnitOfMeasure</td></tr> }
+    </tbody>
+</table>

@@ -1,0 +1,44 @@
+@page "/sales"
+@model IndexModel
+@{
+    ViewData["Title"] = "Sales";
+    ViewData["Menu"] = "sales";
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="plus"><a href="/sales/new">New sale</a></p>
+        </fieldset>
+        <partial name="_Reports" />
+        <partial name="_Calendar" model="Model.Day" />
+        <partial name="_OtherPlaces" />
+    </aside>
+
+    <section class="content">
+        <form method="post">
+            <input type="hidden" name="date" value="@Model.Day.ToString("yyyy-MM-dd")">
+            <fieldset>
+                <legend>@(Model.Day == Time.Today ? "Today's sales" : $"Sales on {Model.Day:dd/MM/yyyy}")</legend>
+                <table class="grid">
+                    <thead><tr><th style="width:32px"></th><th>Customer</th><th style="width:170px">Sale type</th><th style="width:140px">Value</th></tr></thead>
+                    <tbody>
+                        @foreach (var v in Model.Sales)
+                        {
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Delete" asp-route-id="@v.ID" data-confirm="Delete the selected sale?" title="Delete">✕</button></td>
+                                <td><a href="/sales/@v.ID">@(string.IsNullOrEmpty(v.CustomerName) ? $"Sale #{v.ID}" : v.CustomerName)</a></td>
+                                <td>@v.Type</td>
+                                <td class="num">@v.Value.ToString("0.00")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr><td></td><td>Total:</td><td></td><td class="num">@Model.Total.ToString("0.00")</td></tr>
+                        <tr><td></td><td>Cash register total:</td><td></td><td class="num">@Model.RegisterTotal.ToString("0.00")</td></tr>
+                    </tfoot>
+                </table>
+            </fieldset>
+        </form>
+    </section>
+</div>

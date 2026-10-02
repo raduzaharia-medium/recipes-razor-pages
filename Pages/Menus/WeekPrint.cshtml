@@ -1,0 +1,17 @@
+@page "/menus/week/print"
+@model WeekModel
+@{
+    Layout = "_Print";
+    ViewData["Title"] = "Weekly menu";
+}
+<h1>Weekly menu</h1>
+@foreach (var day in Model.Days)
+{
+    <h2 style="text-transform:capitalize">@Model.DayName(day.Key)</h2>
+    @foreach (var m in day)
+    {
+        <p><strong>@m.Name</strong> (@m.Price.ToString("0.00") RON)<br>
+            @foreach (var r in m.Recipes) { @r.Recipe.Name <text> (@r.Portions.ToString("0.##") p)</text><br> }
+        </p>
+    }
+}

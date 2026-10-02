@@ -1,0 +1,49 @@
+@page "/sales/consumption"
+@model ConsumptionModel
+@{
+    if (Model.Print) Layout = "_Print";
+    ViewData["Title"] = "Consumption report";
+    ViewData["Menu"] = "sales";
+    string query = $"date={Model.Day:yyyy-MM-dd}&category={Uri.EscapeDataString(Model.Category ?? "")}";
+}
+@if (Model.Print)
+{
+    <h1>Consumption voucher no. ........... dated @Model.Day.ToString("dd/MM/yyyy")</h1>
+    <strong>Category: </strong>@(string.IsNullOrEmpty(Model.Category) ? "All" : Model.Category)
+    <partial name="_StockTable" model="Model.Items" />
+    <p class="signature">Storekeeper<br>@Model.Storekeeper</p>
+}
+else
+{
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="print"><a href="/sales/consumption?@query&print=true" target="_blank">Print</a></p>
+                <p class="toolbox" data-icon="back"><a href="/sales?date=@Model.Day.ToString("yyyy-MM-dd")">Back to sales</a></p>
+            </fieldset>
+            <partial name="_Reports" />
+            <fieldset>
+                <legend>Report settings</legend>
+                <form method="get">
+                    <p class="field"><label for="date">Date</label><input type="date" id="date" name="date" value="@Model.Day.ToString("yyyy-MM-dd")"></p>
+                    <p class="field">
+                        <label for="category">Category</label>
+                        <select id="category" name="category">
+                            <option value="">(all)</option>
+                            @foreach (var c in Model.Categories) { <option value="@c" selected="@(c == Model.Category)">@c</option> }
+                        </select>
+                    </p>
+                    <p><button type="submit">Generate report</button></p>
+                </form>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <fieldset>
+                <legend>Voucher de consumption - @Model.Day.ToString("dd/MM/yyyy")</legend>
+                <partial name="_StockTable" model="Model.Items" />
+            </fieldset>
+        </section>
+    </div>
+}

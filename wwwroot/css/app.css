@@ -1,0 +1,523 @@
+/*
+   Recipes - the look of the original application (paper background, flower in the corner, pizza logo, pale tabs,
+   Georgia headings), kept as it was and rebuilt with modern CSS: custom properties for the palette, nesting,
+   container queries so the content adapts to the room it has, and a layout that works on phones and tablets.
+*/
+
+/* ---- palette and type: the original values ---------------------------------------------------------------- */
+:root {
+    --text: #696969;
+    --ink: #000;
+    --link: #034af3;
+    --link-visited: #505abc;
+    --link-hover: #1d60ff;
+    --link-active: #12eb87;
+
+    --tab: #e8eef4;           /* menu tabs, buttons */
+    --tab-active: #a6e2a6;
+    --rule: #5C87B2;          /* line above the menu */
+    --divider: #CFCFCF;       /* dashed line beside the menu column */
+
+    --grid-head: #A6A6A6;
+    --grid-head-text: #F8F8F8;
+    --grid-line: #C0C0C0;
+    --stripe: #E8E8E8;
+    --field-line: #ccc;
+    --field-text: #444;
+
+    --cal-line: #d1d6df;
+    --cal-hover: #dbdbdb;
+    --cal-today: #efefef;
+
+    --danger: #ff0000;
+    --ok: #3b7d23;
+
+    --font-body: Calibri, Carlito, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-title: "Segoe UI", Calibri, Helvetica, Arial, sans-serif;
+    --font-heading: georgia, serif;
+    --font-field: consolas, Menlo, monospace;
+
+    --radius: 4px;
+    --field-width: 306px;     /* the original 300px field plus its padding and border */
+
+    color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    padding-inline: 15px;
+    background-image: url(../images/CanvasBackground.png);
+    color: var(--text);
+    font: .85em / 1.5 var(--font-body);
+    font-size: max(.85em, 13.5px);
+}
+
+/* the flower in the top-left corner: behind everything, never wider than the screen, never in the way */
+body > img:first-child { max-width: 100vw; height: auto; pointer-events: none; user-select: none; }
+
+/* ---- text ------------------------------------------------------------------------------------------------- */
+a {
+    &:link    { color: var(--link); text-decoration: underline; }
+    &:visited { color: var(--link-visited); }
+    &:hover   { color: var(--link-hover); text-decoration: underline; }
+    &:active  { color: var(--link-active); }
+}
+
+p, ul { margin-block-end: 20px; line-height: 1.6em; }
+
+h1, h2, h3, h4, h5, h6 { font-size: 1.5em; color: var(--ink); }
+h1 { font-size: 2em; padding-block-end: 0; margin-block-end: 0; }
+h2 { padding: 0 0 10px; }
+h3 { font-size: 1.2em; }
+h4 { font-size: 1.1em; }
+h5, h6 { font-size: 1em; }
+h3.day { text-transform: capitalize; }
+
+small, .muted { color: #999; }
+
+:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--link) 55%, white);
+    outline-offset: 1px;
+}
+
+/* ---- header and tab menu ---------------------------------------------------------------------------------- */
+#header {
+    position: relative;
+    margin-block-end: 0;
+    padding: 14px 0 0;      /* a little air above the title */
+    color: var(--ink);
+
+    & h1 {
+        margin: 0;
+        padding: 5px 0 1px;     /* the line sits right under the title */
+        border: none;
+        color: #A0A0A0;
+        font: normal clamp(24px, 4.5vw, 32px) / 1.2 var(--font-title);
+    }
+}
+
+div#title { display: block; text-align: start; }   /* the title sits above the line... */
+#menucontainer { margin-block-start: 0; }          /* ...and the menu buttons below it */
+
+ul#menu {
+    position: relative;
+    margin: 0;
+    padding: 6px 0 2px;
+    border-block-start: 1px solid var(--rule);
+    list-style: none;
+    text-align: end;
+    line-height: 2.2;
+
+    & li { display: inline; margin-inline-start: 6px; }
+
+    & li a {
+        display: inline-block;
+        padding: 5px 20px;
+        border-radius: var(--radius);
+        background-color: var(--tab);
+        color: var(--link);
+        font-weight: bold;
+        line-height: 1.35;
+        text-decoration: none;
+
+        &:hover  { background-color: #fff; text-decoration: none; }
+        &:active { background-color: var(--tab-active); }
+        &.active { background-color: #fff; color: var(--ink); }
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    ul#menu li a, .toolbox a, .toolbox button, table.grid tbody tr { transition: background-color .12s ease, color .12s ease; }
+}
+
+#main { padding-block: 30px 0; margin-block-end: 30px; }
+#footer { margin: 0; padding: 10px 0; color: #999; font-size: .9em; line-height: normal; text-align: center; }
+
+@media (max-width: 720px) {
+    body { padding-inline: 10px; }
+    ul#menu { text-align: start; }
+    ul#menu li { margin-inline: 0 6px; }
+    ul#menu li a { padding: 6px 14px; }
+    #main { padding-block-start: 16px; }
+}
+
+/* ---- the page: menu column, dashed line, content -------------------------------------------------------- */
+.layout {
+    display: flex;
+    align-items: flex-start;
+    inline-size: 100%;
+
+    & > aside {
+        flex: none;
+        inline-size: 250px;
+        align-self: stretch;
+        padding: 1px 15px 1px 1px;   /* as much room before the dashed line as the page has on the left */
+        border-inline-end: 1px dashed var(--divider);
+
+        & fieldset { margin-block-end: 28px; }   /* room between the groups of the menu column */
+        & fieldset:last-child { margin-block-end: 10px; }
+    }
+
+    & > .content {
+        flex: 1;
+        min-inline-size: 0;
+        padding: 1px 1px 1px 15px;   /* and the same after it */
+        container: content / inline-size;
+    }
+}
+
+@media (max-width: 860px) {
+    .layout {
+        flex-direction: column;
+        align-items: stretch;
+
+        & > aside {
+            inline-size: auto;
+            align-self: auto;
+            padding-inline: 1px;
+            border-inline-end: 0;
+            border-block-end: 1px dashed var(--divider);
+            margin-block-end: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            column-gap: 24px;
+        }
+
+        & > .content { padding-inline: 0; }
+    }
+}
+
+/* on a phone the page itself comes first; the menu column (actions, reports, calendar) follows it */
+@media (max-width: 600px) {
+    .layout > .content { order: -1; }
+    .layout > aside { margin-block: 10px 0; border-block: 1px dashed var(--divider); padding-block: 10px; }
+}
+
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0 20px;
+
+    & > fieldset { flex: 1 1 340px; }
+    & > fieldset:last-child { flex: 0 1 300px; }
+    & table.grid { min-inline-size: 0; }   /* small tables beside each other fit their column */
+}
+
+/* ---- sections, labels and fields ------------------------------------------------------------------------- */
+fieldset {
+    min-inline-size: 0;
+    margin: 0 0 15px;
+    padding: 5px 0;
+    border: 0;
+
+    & legend {
+        inline-size: 100%;
+        padding: 2px 4px 0 0;
+        font: italic 1.3em var(--font-heading);
+    }
+
+    & label {
+        flex: 0 0 auto;
+        inline-size: 15%;
+        min-inline-size: 7.5rem;
+        text-align: end;
+        text-wrap: balance;        /* long labels wrap instead of being cut off */
+        line-height: 1.25;
+
+        &.inline { flex: 0 1 auto; inline-size: auto; min-inline-size: 0; margin: 0; padding: 0; text-align: start; white-space: normal; }
+    }
+
+    & p { margin-block: 1px; }
+    & p.toolbox { margin-inline-start: 16px; }
+    & p.field { display: flex; flex-wrap: wrap; align-items: center; column-gap: 6px; margin-block: 3px; }  /* label and input share one vertical centre */
+}
+
+/* text fields: the original's grey 1px frame and monospace text */
+fieldset input,
+fieldset select {
+    padding: 2px;
+    border: 1px solid var(--field-line);
+    border-radius: 2px;
+    background-color: #fff;
+    color: var(--field-text);
+    font: inherit;
+}
+
+/* text fields: a little inner padding and a plain border highlight on focus instead of an outline that overlaps neighbours */
+:is(fieldset, table.grid) :is(input:not([type=checkbox], [type=radio], [type=hidden], [type=submit]), select) {
+    padding: 4px 6px;
+    transition: border-color .12s ease, box-shadow .12s ease;
+
+    &:focus, &:focus-visible {
+        outline: none;
+        border-color: var(--link);
+        box-shadow: inset 0 0 0 1px var(--link);
+    }
+}
+
+fieldset input { inline-size: min(var(--field-width), 100%); font-family: var(--font-field); }
+fieldset select { inline-size: min(var(--field-width), 100%); font-family: inherit; }
+
+fieldset input[type=checkbox], fieldset input[type=radio] { inline-size: 20px; block-size: 1em; accent-color: var(--link); vertical-align: middle; }
+fieldset input[type=date], fieldset input[type=month] { inline-size: min(300px, 100%); }
+fieldset input[type=search] { inline-size: min(250px, 100%); }
+
+fieldset input.half { inline-size: min(151px, 100%); }
+fieldset input.third { inline-size: min(91px, 100%); }
+fieldset input.two-thirds { inline-size: min(212px, 100%); }
+fieldset input[type=date].half { inline-size: min(152px, 100%); }
+fieldset select.half { inline-size: min(151px, 100%); }
+fieldset p.field .autocomplete input { inline-size: min(300px, 100%); }
+
+fieldset input.num { text-align: start; }
+
+.filter { margin-block-end: 6px; }
+
+/* rows lose their left label when the content is narrow: label above, fields below */
+@container content (max-width: 620px) {
+    fieldset p.field {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2px 6px;
+        margin-block: 6px;
+
+        & label:not(.inline) { flex: 0 0 100%; float: none; inline-size: auto; min-inline-size: 0; margin: 0; padding: 0; text-align: start; white-space: normal; }
+        & input:not([type=checkbox]):not([type=radio]), & select { flex: 1 1 8rem; inline-size: auto; min-inline-size: 0; max-inline-size: var(--field-width); }
+        & input.third { flex: 0 1 91px; }
+        & .autocomplete { flex: 1 1 12rem; max-inline-size: var(--field-width); }
+        & .autocomplete input { inline-size: 100%; max-inline-size: none; }
+    }
+}
+
+/* ---- actions ---------------------------------------------------------------------------------------------- */
+.toolbox {
+    & a { color: var(--link); }
+}
+
+.checks { display: inline-flex; flex-wrap: wrap; gap: .25em 1.5em; align-items: center; vertical-align: middle; }
+
+.toolbox button, button.link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--link);
+    font: inherit;
+    text-align: start;
+    text-decoration: underline;
+    cursor: pointer;
+
+    &:hover { color: var(--link-hover); }
+}
+
+/* small buttons (add a line, filter...) wear the colours of the menu tabs */
+button:not(.link):not(.icon-button) {
+    padding: 2px 10px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background-color: var(--tab);
+    color: var(--link);
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+
+    &:hover  { background-color: #fff; border-color: var(--cal-line); }
+    &:active { background-color: var(--tab-active); }
+}
+
+.toolbox button:not(.link) { padding: 0; border: 0; background: none; font-weight: normal; }
+
+.hidden-default { position: absolute; inset-inline-start: -9999px; inline-size: 1px; block-size: 1px; overflow: hidden; }
+[hidden] { display: none !important; }
+
+/* ---- icons beside the actions of the menu column: thin outlines in the blue-grey of the menu rule ---------------- */
+.toolbox[data-icon] > a, .toolbox[data-icon] > button { display: inline-flex; align-items: center; gap: .5em; }
+
+.toolbox[data-icon] > :is(a, button)::before {
+    content: "";
+    flex: none;
+    inline-size: 1.15em;
+    block-size: 1.15em;
+    background-color: color-mix(in srgb, var(--rule) 85%, white);
+    mask: var(--icon) center / contain no-repeat;
+    -webkit-mask: var(--icon) center / contain no-repeat;
+}
+
+.toolbox[data-icon] > :is(a, button):hover::before { background-color: var(--link-hover); }
+
+.toolbox[data-icon="plus"] { --icon: url(../icons/plus.svg); }
+.toolbox[data-icon="check"] { --icon: url(../icons/check.svg); }
+.toolbox[data-icon="back"] { --icon: url(../icons/back.svg); }
+.toolbox[data-icon="close"] { --icon: url(../icons/close.svg); }
+.toolbox[data-icon="refresh"] { --icon: url(../icons/refresh.svg); }
+.toolbox[data-icon="reset"] { --icon: url(../icons/reset.svg); }
+.toolbox[data-icon="copy"] { --icon: url(../icons/copy.svg); }
+.toolbox[data-icon="print"] { --icon: url(../icons/print.svg); }
+.toolbox[data-icon="save"] { --icon: url(../icons/save.svg); }
+.toolbox[data-icon="calendar"] { --icon: url(../icons/calendar.svg); }
+.toolbox[data-icon="stock"] { --icon: url(../icons/stock.svg); }
+.toolbox[data-icon="box"] { --icon: url(../icons/box.svg); }
+.toolbox[data-icon="scale"] { --icon: url(../icons/scale.svg); }
+.toolbox[data-icon="receipt"] { --icon: url(../icons/receipt.svg); }
+.toolbox[data-icon="sigma"] { --icon: url(../icons/sigma.svg); }
+.toolbox[data-icon="glass"] { --icon: url(../icons/glass.svg); }
+.toolbox[data-icon="pot"] { --icon: url(../icons/pot.svg); }
+.toolbox[data-icon="cart"] { --icon: url(../icons/cart.svg); }
+.toolbox[data-icon="menu"] { --icon: url(../icons/menu.svg); }
+.toolbox[data-icon="recipe"] { --icon: url(../icons/recipe.svg); }
+.toolbox[data-icon="truck"] { --icon: url(../icons/truck.svg); }
+.toolbox[data-icon="list"] { --icon: url(../icons/list.svg); }
+
+/* the delete icon (a link or a button that carries no text of its own) */
+.icon-button {
+    display: inline-block;
+    inline-size: 12px;
+    block-size: 12px;
+    padding: 0;
+    border: 0;
+    background: url(../images/Delete.png) center / 12px 12px no-repeat;
+    color: transparent;
+    font-size: 0;
+    text-decoration: none;
+    vertical-align: middle;
+    overflow: hidden;
+    cursor: pointer;
+
+    &:hover { transform: scale(1.25); }
+}
+
+/* ---- grids (tables) --------------------------------------------------------------------------------------- */
+table.grid {
+    inline-size: 100%;
+    min-inline-size: 36rem;
+    margin: 0;
+    border-collapse: collapse;
+
+    & thead tr { background-color: var(--grid-head); color: var(--grid-head-text); font-size: 14px; font-weight: bold; }
+    & thead a { color: var(--grid-head-text); }
+    & th { padding: 5px; border: 1px solid var(--grid-line); }
+    & td { padding: 3.5px 5px; border: 1px solid var(--grid-line); }
+
+    & tr { background-color: #fff; }
+    & tbody tr:nth-child(even) { background-color: var(--stripe); color: var(--ink); }
+    & tbody tr:nth-child(even) a { color: var(--ink); }
+    & tr a { color: var(--text); }
+
+    /* a gentle highlight of the row under the pointer, in the tab colour */
+    & tbody tr:hover:not(.insertion) { background-color: color-mix(in srgb, var(--tab) 80%, white); }
+
+    &:has(tr.insertion .autocomplete) { min-inline-size: 46rem; }   /* room for the product column beside the fixed ones */
+    &.wide { min-inline-size: 60rem; }   /* the receipt table has thirteen columns */
+
+    & td.num { text-align: start; font-variant-numeric: tabular-nums; }
+    & td.center { text-align: center; }
+    & td.amount small { display: block; color: var(--muted, #777); font-size: 11px; white-space: nowrap; }   /* the amount before VAT and the VAT, under the total */
+    & tfoot td.num { text-align: end; padding-inline-end: 10px; }
+
+    /* the line where the next row is typed, and cells that hold inputs */
+    & tr.insertion td, & td.insertion-cell { padding: 3px 4px; vertical-align: middle; }
+    & tr.insertion { background-color: color-mix(in srgb, var(--tab) 55%, white) !important; }
+    & tr.insertion input:not([type=hidden], [type=checkbox], [type=radio]), & td.insertion-cell input:not([type=hidden], [type=checkbox], [type=radio]) {
+        float: none; display: block; box-sizing: border-box; inline-size: 100%; block-size: 28px; margin: 0;
+    }
+    & td input[type=checkbox] { float: none; display: block; inline-size: 18px; block-size: 18px; margin: 0 auto; padding: 0; }   /* a normal checkbox, centred in its cell */
+    & tr.insertion button { float: none; display: block; margin-inline: auto; }
+    & .autocomplete { display: block; }
+    & .autocomplete input { float: none; inline-size: 100%; }
+
+    & tfoot tr, & tr.totals { background-color: transparent; color: var(--ink); }
+    & tfoot td, & tr.totals td { background-color: transparent; border-width: 0; }
+}
+
+.big { font-size: 22px; font-weight: bold; }
+
+/* on narrow content the tables scroll sideways instead of squeezing their columns */
+@container content (max-width: 760px) {
+    fieldset:has(> table.grid) { overflow-x: auto; }
+}
+
+/* ---- the month calendar ------------------------------------------------------------------------------------ */
+.calendar { max-inline-size: 320px; cursor: default; }
+.calendar-head { display: flex; justify-content: space-between; padding: 5px; color: var(--ink); font-size: 11px; }
+.calendar-head a { color: var(--ink); text-decoration: none; }
+.calendar-head a.month { font-weight: normal; }              /* the month name also takes you back to today */
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));   /* the days share the whole width of the column */
+    gap: 2px;
+
+    & .weekday { padding: 5px 0; font-size: 11px; text-align: center; }
+
+    & .day {
+        display: block;
+        block-size: 22px;
+        border: 1px solid var(--cal-line);
+        color: var(--ink);
+        font-size: .8em;
+        line-height: 20px;
+        text-align: center;
+        text-decoration: none;
+        cursor: default;
+
+        &:hover { background-color: var(--cal-hover); }
+        /* the chosen day keeps the original grey fill; today is picked out in blue with a blue-grey outline */
+        &.selected { background-color: var(--cal-today); font-weight: bold; }
+        &.today { border-color: var(--rule); color: var(--link); font-weight: bold; }
+        &.today.selected { background-color: var(--cal-today); }
+    }
+}
+
+
+/* ---- suggestions while typing (the look of the jQuery UI menu of the original) ----------------------------------- */
+.autocomplete { position: relative; display: inline-block; max-inline-size: 100%; }
+
+.suggestions {
+    position: absolute;
+    z-index: 20;
+    inset-inline-start: 0;
+    min-inline-size: 100%;
+    max-block-size: 18rem;
+    margin: 0;
+    padding: 2px;
+    overflow: auto;
+    border: 1px solid #aaaaaa;
+    border-radius: var(--radius);
+    background: #fff;
+    color: #222222;
+    font: 11px / 1.5 Verdana, Arial, sans-serif;
+    list-style: none;
+    box-shadow: 0 3px 8px rgb(0 0 0 / .15);
+
+    & li {
+        display: flex;
+        justify-content: space-between;
+        gap: 14px;
+        padding: .2em .4em;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        white-space: nowrap;
+        cursor: default;
+
+        &:hover, &.active { margin: -1px; border-color: #999999; background: #dadada; color: #212121; }
+        & small { color: #777; }
+    }
+}
+
+/* ---- messages and validation ------------------------------------------------------------------------------- */
+.field-validation-error { color: var(--danger); }
+.field-validation-valid { display: none; }
+.input-validation-error { border: 1px solid var(--danger) !important; background-color: #ffeeee !important; }
+.validation-summary-errors, .errors { color: var(--danger); font-weight: bold; }
+.validation-summary-valid { display: none; }
+.errors ul { margin: 0; padding-inline-start: 18px; }
+.error { color: var(--danger); }
+.clear { clear: both; }
+
+.notice { margin: 0 0 10px; font-weight: bold; &.ok { color: var(--ok); } &.error { color: var(--danger); } }
+.panel { margin-block-end: 10px; padding: 5px 10px; background-color: var(--stripe); border-radius: var(--radius); }
+.card { margin-block: 5px; padding: 3px 10px; border: 1px solid var(--grid-line); border-radius: var(--radius); background-color: #fff; }

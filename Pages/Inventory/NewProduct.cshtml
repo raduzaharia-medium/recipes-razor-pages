@@ -1,0 +1,35 @@
+@page "/inventory/new-product"
+@model NewProductModel
+@{
+    ViewData["Title"] = "New product";
+    ViewData["Menu"] = "inventory";
+}
+<form method="post">
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="check"><button type="submit" class="primary">Save</button></p>
+                <p class="toolbox" data-icon="close"><a href="/inventory">Cancel</a></p>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <div asp-validation-summary="All" class="errors"></div>
+            <fieldset>
+                <legend>New product</legend>
+                <p class="field">
+                    <label asp-for="Input.Code">Code and name</label>
+                    <input asp-for="Input.Code" class="third" placeholder="@Model.LastProductCode" autofocus>
+                    <input asp-for="Input.Name" class="two-thirds">
+                </p>
+                <p class="field">
+                    <label asp-for="Input.UnitOfMeasure">Unit and category</label>
+                    <input asp-for="Input.UnitOfMeasure" class="third">
+                    <input asp-for="Input.Category" class="two-thirds" data-autocomplete="/lookup?handler=Categories" data-min-length="1">
+                </p>
+                <p class="field"><label asp-for="Input.VatPercent">VAT %</label><input asp-for="Input.VatPercent" class="third num" inputmode="decimal" asp-format="{0:0.##}"></p>
+            </fieldset>
+        </section>
+    </div>
+</form>

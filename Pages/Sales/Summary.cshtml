@@ -1,0 +1,40 @@
+@page "/sales/summary"
+@model SummaryModel
+@{
+    if (Model.Print) Layout = "_Print";
+    ViewData["Title"] = "Sales summary";
+    ViewData["Menu"] = "sales";
+}
+@if (Model.Print)
+{
+    <h1>Sales summary no. ........... dated @Model.Day.ToString("dd/MM/yyyy")</h1>
+    <partial name="_SummaryTable" model="Model" />
+    <p class="signature">Storekeeper<br>@Model.Storekeeper</p>
+}
+else
+{
+    <div class="layout">
+        <aside>
+            <fieldset>
+                <legend>Activities</legend>
+                <p class="toolbox" data-icon="print"><a href="/sales/summary?date=@Model.Day.ToString("yyyy-MM-dd")&print=true" target="_blank">Print</a></p>
+                <p class="toolbox" data-icon="back"><a href="/sales?date=@Model.Day.ToString("yyyy-MM-dd")">Back to sales</a></p>
+            </fieldset>
+            <partial name="_Reports" />
+            <fieldset>
+                <legend>Report settings</legend>
+                <form method="get">
+                    <p class="field"><label for="date">Date</label><input type="date" id="date" name="date" value="@Model.Day.ToString("yyyy-MM-dd")"></p>
+                    <p><button type="submit">Generate report</button></p>
+                </form>
+            </fieldset>
+            <partial name="_OtherPlaces" />
+        </aside>
+        <section class="content">
+            <fieldset>
+                <legend>Summary sales - @Model.Day.ToString("dd/MM/yyyy")</legend>
+                <partial name="_SummaryTable" model="Model" />
+            </fieldset>
+        </section>
+    </div>
+}

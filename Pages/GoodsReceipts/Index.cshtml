@@ -1,0 +1,41 @@
+@page "/goods-receipts"
+@model IndexModel
+@{
+    ViewData["Title"] = "Goods receipts";
+    ViewData["Menu"] = "goods-receipts";
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="plus"><a href="/goods-receipts/edit">New goods receipt</a></p>
+            <p class="toolbox" data-icon="plus"><a href="/inventory/new-product">New product</a></p>
+        </fieldset>
+        <partial name="_Calendar" model="Model.Day" />
+        <partial name="_OtherPlaces" />
+    </aside>
+
+    <section class="content">
+        <form method="post">
+            <input type="hidden" name="date" value="@Model.Day.ToString("yyyy-MM-dd")">
+            <fieldset>
+                <legend>@(Model.Day == Time.Today ? "Today's goods receipts" : $"Goods receipts on {Model.Day:dd/MM/yyyy}")</legend>
+                <table class="grid">
+                    <thead><tr><th style="width:32px"></th><th style="width:130px">Goods receipt</th><th>Supplier</th><th style="width:80px">VAT</th><th style="width:140px">Value</th></tr></thead>
+                    <tbody>
+                        @foreach (var r in Model.GoodsReceipts)
+                        {
+                            <tr>
+                                <td><button type="submit" class="icon-button" asp-page-handler="Delete" asp-route-id="@r.ID" data-confirm="Delete goods receipt @r.Number?" title="Delete">✕</button></td>
+                                <td><a href="/goods-receipts/edit/@r.ID">No. @r.Number</a></td>
+                                <td>@r.SupplierName</td>
+                                <td class="num">@string.Join(", ", r.Products.Select(l => l.Vat).Distinct().Order().Select(v => $"{v * 100:0.##}%"))</td>
+                                <td class="num">@r.Value.ToString("0.00")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </fieldset>
+        </form>
+    </section>
+</div>

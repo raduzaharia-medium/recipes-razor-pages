@@ -1,0 +1,11 @@
+@model List<StockLine>
+<table class="grid">
+    <thead><tr><th style="width:90px">Code</th><th style="width:120px">Category</th><th>Product</th><th style="width:60px">Unit</th><th style="width:110px">Quantity</th><th style="width:110px">Purchase price</th><th style="width:120px">Value</th></tr></thead>
+    <tbody>
+        @foreach (var e in Model)
+        {
+            <tr><td>@e.Code</td><td>@e.Category</td><td>@e.Name</td><td class="center">@e.UnitOfMeasure</td><td class="num">@e.Quantity.ToString("0.00")</td><td class="num">@e.PurchasePrice.ToString("0.00")</td><td class="num">@e.PurchaseValue.ToString("0.00")</td></tr>
+        }
+    </tbody>
+    <tfoot><tr><td></td><td></td><td>Total:</td><td></td><td></td><td></td><td class="num">@Model.Sum(e => e.PurchaseValue).ToString("0.00")</td></tr></tfoot>
+</table>

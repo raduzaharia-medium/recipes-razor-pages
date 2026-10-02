@@ -1,0 +1,11 @@
+@model SummaryModel
+<table class="grid">
+    <thead><tr><th style="width:90px">Code</th><th>Product</th><th style="width:110px">Portions</th><th style="width:110px">Unit price</th><th style="width:120px">Value</th></tr></thead>
+    <tbody>
+        @foreach (var e in Model.Items)
+        {
+            <tr><td>@e.Code</td><td>@e.Product</td><td class="num">@e.Portions.ToString("0.00")</td><td class="num">@e.Price.ToString("0.00")</td><td class="num">@e.Value.ToString("0.00")</td></tr>
+        }
+    </tbody>
+    <tfoot><tr><td></td><td>Total:</td><td></td><td></td><td class="num">@Model.Items.Sum(e => e.Value).ToString("0.00")</td></tr></tfoot>
+</table>

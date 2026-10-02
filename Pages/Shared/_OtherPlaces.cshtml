@@ -1,0 +1,22 @@
+@* "Other places": shortcuts to the places related to the one you are in, at the bottom of the menu column. *@
+@{
+    (string Href, string Text, string Icon)[] places = ViewData["Menu"] switch
+    {
+        "sales" => [("/menus", "Menus", "menu"), ("/recipes", "Recipes", "recipe"), ("/inventory", "Inventory", "box")],
+        "menus" => [("/recipes", "Recipes", "recipe"), ("/sales/new", "New sale", "cart"), ("/sales", "Sales", "list")],
+        "recipes" => [("/menus", "Menus", "menu"), ("/inventory", "Inventory", "box"), ("/goods-receipts", "Goods receipts", "truck")],
+        "goods-receipts" => [("/inventory", "Inventory", "box"), ("/recipes", "Recipes", "recipe"), ("/sales", "Sales", "list")],
+        "inventory" => [("/goods-receipts", "Goods receipts", "truck"), ("/recipes", "Recipes", "recipe"), ("/sales", "Sales", "list")],
+        _ => []
+    };
+}
+@if (places.Length > 0)
+{
+    <fieldset>
+        <legend>Other places</legend>
+        @foreach (var place in places)
+        {
+            <p class="toolbox" data-icon="@place.Icon"><a href="@place.Href">@place.Text</a></p>
+        }
+    </fieldset>
+}

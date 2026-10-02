@@ -1,0 +1,42 @@
+@page "/sales/{id:int}"
+@model DetailsModel
+@{
+    ViewData["Title"] = "Sale";
+    ViewData["Menu"] = "sales";
+    var v = Model.Sale;
+}
+<div class="layout">
+    <aside>
+        <fieldset>
+            <legend>Activities</legend>
+            <p class="toolbox" data-icon="plus"><a href="/sales/new">New sale</a></p>
+            <p class="toolbox" data-icon="back"><a href="/sales?date=@v.Date?.ToString("yyyy-MM-dd")">Back to list</a></p>
+            @if (!string.IsNullOrEmpty(v.InvoiceSeries) || v.InvoiceNumber is not null)
+            {
+                <p class="toolbox" data-icon="print"><a href="/sales/@v.ID/invoice?products=true" target="_blank">Print invoice</a></p>
+            }
+        </fieldset>
+        <partial name="_OtherPlaces" />
+    </aside>
+    <section class="content">
+        <fieldset>
+            <legend>Sale #@v.ID - @v.Date?.ToString("dd/MM/yyyy")</legend>
+            <p><strong>Type: </strong>@(v.Type ?? "-")</p>
+            @if (!string.IsNullOrEmpty(v.CustomerName)) { <p><strong>Customer: </strong>@string.Join(", ", new[] { v.CustomerName, v.CustomerAddress, v.CustomerCounty, v.CustomerTaxId }.Where(s => !string.IsNullOrEmpty(s)))</p> }
+            @if (v.Vouchers.Count > 0) { <p><strong>Meal vouchers: </strong>@string.Join(", ", v.Vouchers.Select(b => $"{b.VoucherCount} x {b.VoucherValue:0.00}"))</p> }
+        </fieldset>
+        <fieldset>
+            <legend>Products sold</legend>
+            <table class="grid">
+                <thead><tr><th style="width:90px">Code</th><th>Product</th><th style="width:110px">Portions</th><th style="width:110px">Price</th><th style="width:120px">Value</th></tr></thead>
+                <tbody>
+                    @foreach (var e in v.SaleLines)
+                    {
+                        <tr><td>@e.DisplayCode</td><td>@e.DisplayName</td><td class="num">@e.Portions.ToString("0.##")</td><td class="num">@e.Price.ToString("0.00")</td><td class="num">@e.Value.ToString("0.00")</td></tr>
+                    }
+                </tbody>
+                <tfoot><tr><td></td><td>Total:</td><td></td><td></td><td class="num">@v.Value.ToString("0.00")</td></tr></tfoot>
+            </table>
+        </fieldset>
+    </section>
+</div>
